@@ -7,6 +7,18 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+Owner
+This class represented the pet owner. I assigned it the responsibility of storing the owner’s basic information and scheduling preferences, such as available time, whether they prefer shorter tasks first, and whether low-energy mode is on.
+
+Pet
+This class represented each pet. Its responsibility was to store pet-specific information like name, species, age, and notes. It served as the connection between the owner and the care tasks.
+
+Task
+This class represented a pet care activity, such as feeding, walking, medication, or grooming. Its responsibility was to store the task details needed for scheduling, including title, duration, priority, whether it is mandatory, and whether it has been completed.
+
+Planner
+This class handled the scheduling logic. I assigned it the responsibility of checking which tasks still need to be done, scoring or prioritizing them, and generating a daily schedule based on the owner’s time and preferences.
+
 **b. Design changes**
 
 - Did your design change during implementation?
