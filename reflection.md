@@ -24,6 +24,15 @@ This class handled the scheduling logic. I assigned it the responsibility of che
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+There is no major logic error yet, but there are three important design weaknesses:
+
+I made a few small design changes after reviewing my initial class skeleton and considering AI-suggested improvements.
+
+First, I updated the method designs for Task, Pet, and Owner. Originally, methods like update_task() and update_preferences() had no parameters, so it was unclear what they would change. I revised them so they can take optional values for specific attributes.
+
+Second, I clarified the Planner output. Returning a generic dict was too vague, so I noted that the schedule result should have a clearly defined structure.
+
+Third, I kept the four-class design simple, but I made sure the relationships between Owner, Pet, and Task were more consistent. AI feedback also suggested adding basic validation later, such as checking that task duration and available time are not negative.
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
