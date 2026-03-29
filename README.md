@@ -135,5 +135,5 @@ The core scheduling logic — recurrence, sorting, conflict detection, and filte
 
 ## Demo 
 
-demo1.png<img width="795" height="907" alt="demo1" src="https://github.com/user-attachments/assets/0029ff88-fc79-469e-87f5-b3f8a042ebc4" />
+<img width="795" height="907" alt="demo1" src="https://github.com/user-attachments/assets/0029ff88-fc79-469e-87f5-b3f8a042ebc4" />
 
