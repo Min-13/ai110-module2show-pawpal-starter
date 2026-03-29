@@ -135,5 +135,4 @@ The core scheduling logic — recurrence, sorting, conflict detection, and filte
 
 ## Demo 
 
-<a href="/course_images/ai110/demo1.png" target="_blank"><img src='/course_images/ai110/demo1.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>.
-
+demo1.png
