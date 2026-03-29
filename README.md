@@ -44,6 +44,38 @@ The `Scheduler` class in `pawpal_system.py` has been extended with several new f
 
 ---
 
+## Testing PawPal+
+
+### Run the tests
+
+```bash
+python -m pytest test/ -v
+```
+
+### What the tests cover
+
+The test suite lives in `test/test_scheduler_features.py` and contains **49 tests** across 7 groups:
+
+| Group | What is tested |
+|-------|---------------|
+| `TestIsDueToday` | Non-recurring, daily, and weekly due-date logic including boundary cases (exactly 6 vs 7 days ago) |
+| `TestNextOccurrence` | Daily/weekly next-date calculation, attribute copying, month/year boundary rollovers, non-recurring returns `None` |
+| `TestCompleteTask` | Marks task done, appends next occurrence for recurring tasks, leaves list unchanged for non-recurring |
+| `TestSortByTime` | Chronological ordering, tasks without a preferred time sort last, empty list, single task |
+| `TestDetectConflicts` | Same-time duplicates, partial overlaps, back-to-back (no conflict), cross-pet conflicts, tasks with no preferred time skipped safely |
+| `TestFilterBy` | Filter by pet name, category (case-insensitive), max priority, empty pet, no pets, unknown pet name |
+| `TestGenerateSchedule` | Schedule fits budget, sorted output, tasks skipped when time gap causes overflow, preferred time moved when before day start |
+
+Each group includes both **happy paths** (normal inputs, expected outputs) and **edge cases** (empty lists, boundary values, missing data).
+
+### Confidence Level
+
+**4 / 5 stars**
+
+The core scheduling logic — recurrence, sorting, conflict detection, and filtering — is fully covered and all 49 tests pass. One star is withheld because the Streamlit UI layer (`app.py`) has no automated tests, and integration between the UI and `Scheduler` is not yet verified programmatically.
+
+---
+
 ## Getting started
 
 ### Setup
