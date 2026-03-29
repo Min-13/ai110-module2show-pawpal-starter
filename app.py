@@ -130,40 +130,64 @@ else:
 st.divider()
 
 # ----------------------------------------------------
-# 4. Display pets and tasks
+# 4. Display pets and tasks (sorted by preferred time)
 # ----------------------------------------------------
 st.subheader("Your Pets & Tasks")
 
 if not owner.pets:
     st.info("No pets registered yet.")
 else:
+    _scheduler = Scheduler()
+
+    # --- Conflict warning banner across all pets ---
+    all_task_items = _scheduler.filter_by(owner, status="all")
+    conflicts = _scheduler.detect_conflicts(all_task_items)
+
+    if conflicts:
+        st.warning(
+            f"⚠️ **{len(conflicts)} scheduling conflict(s) detected** — "
+            "two or more tasks are scheduled at overlapping times. "
+            "Review the details below and adjust preferred times."
+        )
+        for c in conflicts:
+            st.error(
+                f"**Conflict:** {c['task_a']}  \n"
+                f"overlaps with {c['task_b']}  \n"
+                f"**Overlapping window:** {c['overlap']}"
+            )
+
     for pet in owner.pets:
         with st.expander(f"**{pet.name}** — {pet.species.capitalize()}, age {pet.age}", expanded=True):
             if pet.notes:
                 st.caption(f"Notes: {pet.notes}")
 
             if not pet.tasks:
-                st.write("No tasks yet for this pet.")
+                st.info("No tasks yet for this pet.")
             else:
-                for task in pet.tasks:
+                # Sort tasks by preferred time using Scheduler
+                pet_task_items = [(pet.name, t) for t in pet.tasks]
+                sorted_items = _scheduler.sort_by_time(pet_task_items)
+
+                for _, task in sorted_items:
                     col1, col2 = st.columns([5, 1])
 
                     with col1:
-                        st.write(
-                            f"**{task.title}** | {task.category} | {task.duration_min} min | "
-                            f"Priority {task.priority} | "
-                            f"{'Mandatory' if task.mandatory else 'Optional'} | "
-                            f"Recurring: {task.recurrence} | "
-                            f"Preferred time: {task.preferred_time or '-'} | "
-                            f"Completed: {'Yes' if task.completed else 'No'}"
+                        time_badge = f"`{task.preferred_time}`" if task.preferred_time else "`--:--`"
+                        mandatory_badge = "🔴 Mandatory" if task.mandatory else "⚪ Optional"
+                        recurrence_badge = f"🔁 {task.recurrence}" if task.recurrence != "none" else ""
+                        st.markdown(
+                            f"{time_badge} **{task.title}** — {task.category} | "
+                            f"{task.duration_min} min | P{task.priority} | "
+                            f"{mandatory_badge} {recurrence_badge}"
                         )
 
                     with col2:
                         if not task.completed:
                             if st.button("Complete", key=f"complete_{task.task_id}"):
-                                task.mark_complete()
+                                _scheduler.complete_task(pet, task)
                                 st.rerun()
                         else:
+                            st.success("Done")
                             if st.button("Reset", key=f"reset_{task.task_id}"):
                                 task.reset_status()
                                 st.rerun()
@@ -198,13 +222,29 @@ if st.button("Generate Schedule", type="primary"):
             st.info("No tasks matched the current filters.")
         else:
             st.success(
-                f"Schedule generated — {len(schedule_rows)} task(s), "
-                f"{result['time_used']} minutes used, "
-                f"{result['time_remaining']} minutes remaining."
+                f"✅ Schedule generated — **{len(schedule_rows)} task(s)**, "
+                f"**{result['time_used']} min used**, "
+                f"**{result['time_remaining']} min remaining**."
             )
-            st.dataframe(schedule_rows, use_container_width=True)
+
+            # Display as a clean table with selected columns
+            display_rows = [
+                {
+                    "Time": f"{row['start_time']} – {row['end_time']}",
+                    "Pet": row["pet"],
+                    "Task": row["task"],
+                    "Category": row["category"],
+                    "Duration": f"{row['duration_min']} min",
+                    "Priority": row["priority"],
+                    "Mandatory": "Yes" if row["mandatory"] else "No",
+                    "Recurrence": row["recurrence"],
+                    "Conflict Note": row["conflict"],
+                }
+                for row in schedule_rows
+            ]
+            st.table(display_rows)
 
         if result["skipped"]:
-            st.warning("Some tasks could not be scheduled:")
+            st.warning(f"⏭️ **{len(result['skipped'])} task(s) could not be scheduled** (not enough time remaining):")
             for item in result["skipped"]:
-                st.write(f"- {item['pet']} — {item['task']}: {item['reason']}")
+                st.write(f"- **{item['pet']}** — {item['task']}: {item['reason']}")

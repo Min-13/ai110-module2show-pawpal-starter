@@ -22,6 +22,63 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Getting started
+
+### Setup
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Suggested workflow
+
+1. Read the scenario carefully and identify requirements and edge cases.
+2. Draft a UML diagram (classes, attributes, methods, relationships).
+3. Convert UML into Python class stubs (no logic yet).
+4. Implement scheduling logic in small increments.
+5. Add tests to verify key behaviors.
+6. Connect your logic to the Streamlit UI in `app.py`.
+7. Refine UML so it matches what you actually built.
+
+## Features
+
+### Task Management
+- **Task completion tracking** — `Task.mark_complete()` records the completion date in ISO format; `Task.reset_status()` marks it pending again without touching other fields
+- **Selective field updates** — `Task.update_task()` and `Pet.update_info()` only modify fields that receive a non-`None` value, leaving everything else unchanged
+- **Total duration aggregation** — `Pet.total_duration()` sums all task durations to show the full time commitment for a pet
+
+### Recurrence Engine
+- **Daily recurrence** — a daily task is due again as soon as it has not been completed today; `Task.is_due_today()` compares `last_completed_on` to the current date
+- **Weekly recurrence** — a weekly task becomes due once 7 or more days have elapsed since the last completion, with a boundary-safe `>= 7` check
+- **Automatic next-occurrence scheduling** — `Task.next_occurrence()` uses Python's `timedelta` to create a fresh, reset copy of a recurring task for the next due date (daily → +1 day, weekly → +7 days); non-recurring tasks return `None`
+- **Complete + reschedule in one step** — `Scheduler.complete_task()` marks the task done and appends the next occurrence to the pet's task list automatically
+
+### Sorting & Filtering
+- **Sorting by preferred time** — `Scheduler.sort_by_time()` converts `"HH:MM"` strings to total minutes with a lambda key and sorts tasks chronologically; tasks with no preferred time sort to the end
+- **Multi-criteria filtering** — `Scheduler.filter_by()` chains four independent filters: pet name, completion status (`pending` / `completed` / `all`), category (case-insensitive), and max priority
+- **Basic status filtering** — `Scheduler.filter_tasks()` provides a lightweight pet-name and status filter used internally by the schedule generator
+
+### Conflict Detection
+- **Preferred-time overlap detection** — `Scheduler.detect_conflicts()` checks every pair of timed tasks using the standard interval-overlap condition (`a_start < b_end and b_start < a_end`); tasks with no preferred time are silently skipped
+- **Lightweight warnings** — conflicts are returned as a list of dicts (never exceptions), so the caller decides whether to print, display, or log them
+- **Cross-pet conflict support** — tasks belonging to different pets are compared against each other, not just tasks within the same pet
+
+### Greedy Schedule Generation
+- **Priority scoring** — `Scheduler.score_task()` computes a float score from base priority, a mandatory-task bonus (+35), a short-task preference bonus, a low-energy mode penalty for long non-mandatory tasks, and a small preferred-time bonus (+2)
+- **Greedy task selection** — `Scheduler.select_tasks()` ranks tasks by descending score (then preferred time, then duration) and greedily picks tasks until the owner's `available_minutes` budget is exhausted
+- **Time-blocked schedule placement** — `generate_schedule()` places each selected task sequentially from a configurable `day_start`, respecting preferred times where possible and recording a conflict note when a task is moved forward
+- **Skipped-task reporting** — tasks that pass selection but no longer fit after earlier tasks are placed are recorded in a `skipped` list with a human-readable reason
+
+### Streamlit UI
+- **Live conflict banner** — `detect_conflicts()` runs on every render; if any overlaps exist, a warning banner and per-conflict error cards appear above the task list
+- **Sorted task display** — tasks inside each pet's panel are rendered in chronological order via `sort_by_time()`, with preferred time shown as an inline badge
+- **One-click recurrence** — the Complete button calls `Scheduler.complete_task()` so recurring tasks are automatically rescheduled without any extra interaction
+- **Clean schedule table** — `st.table()` renders the generated schedule with curated columns (Time, Pet, Task, Category, Duration, Priority, Mandatory, Recurrence, Conflict Note), hiding internal scoring from the user
+
+---
+
 ## Smarter Scheduling
 
 The `Scheduler` class in `pawpal_system.py` has been extended with several new features beyond basic plan generation:
@@ -76,22 +133,7 @@ The core scheduling logic — recurrence, sorting, conflict detection, and filte
 
 ---
 
-## Getting started
+## Demo 
 
-### Setup
+<a href="/course_images/ai110/demo.pdf" target="_blank"><img src='/course_images/ai110/your_screenshot_name.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>.
 
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Suggested workflow
-
-1. Read the scenario carefully and identify requirements and edge cases.
-2. Draft a UML diagram (classes, attributes, methods, relationships).
-3. Convert UML into Python class stubs (no logic yet).
-4. Implement scheduling logic in small increments.
-5. Add tests to verify key behaviors.
-6. Connect your logic to the Streamlit UI in `app.py`.
-7. Refine UML so it matches what you actually built.

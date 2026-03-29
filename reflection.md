@@ -98,10 +98,35 @@ To evaluate the suggestion, I compared it with my original code and asked myself
 - What behaviors did you test?
 - Why were these tests important?
 
+I focused on the main behaviors my scheduler is supposed to support.
+
+I tested filtering by pet and status to make sure the scheduler only returns the right tasks for one pet, all pets, pending tasks, or completed tasks. This was important because the whole schedule depends on starting from the correct set of tasks.
+
+I tested sorting by time so tasks with a preferred_time appear in the correct order and untimed tasks go later. This mattered because the app is supposed to build a schedule, not just list tasks randomly.
+
+I tested task scoring and selection within available time. My scheduler gives higher weight to priority, mandatory tasks, short-task preference, and low-energy mode, then only selects tasks that fit within available_minutes. This was important because the schedule should be realistic for a busy owner.
+
+I tested recurring-task behavior, especially whether daily and weekly tasks count as due today and whether completing a recurring task creates the next occurrence. This mattered because recurring pet care is one of the most practical parts of the app.
+
+I also tested basic conflict detection for overlapping preferred times. This was important because two tasks can easily be assigned overlapping times, and the scheduler should warn the user instead of silently ignoring the issue.
+
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
+
+I am fairly confident that the scheduler works correctly for the main use cases, especially filtering, time ordering, recurrence rules, time-budget selection, and overlap warnings, because those behaviors are directly implemented in the final Scheduler methods.
+
+My confidence is not perfect, though, because there are still more edge cases I would want to test if I had more time.
+
+The next edge cases I would test are:
+
+1. a pet with no tasks, to confirm the scheduler returns an empty result cleanly
+2. two tasks at exactly the same preferred time, to verify the conflict warning is correct
+3. a task with no preferred time, to confirm it still schedules properly
+4. a recurring task completed today versus yesterday for daily recurrence, and 6 days versus 7 days ago for weekly recurrence
+5. a case where no tasks fit within the owner’s available time
+6. tasks that are already completed but still stored in a pet’s task list, to confirm they do not appear in the pending filter incorrectly.
 
 ---
 
@@ -111,10 +136,16 @@ To evaluate the suggestion, I compared it with my original code and asked myself
 
 - What part of this project are you most satisfied with?
 
+The part of this project I am most satisfied with was learning how to come up with a UML diagram (design process) and write tests more efficiently and how to ship a basic working app within a few hours. I was also glad that I learned how to use AI more effectively and reflectively during the process. Instead of only asking for answers, I used AI to brainstorm, debug, and explain code I did not fully understand, which helped me move faster while still learning.
+
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
+If I had another iteration, I would improve the app by testing more cases and making the code more robust for different working situations. I would also spend more time breaking the project into smaller steps before implementing each part. If time allowed, I would use AI earlier in each step to help me understand the concept more clearly before coding, so the design and implementation would be more thoughtful and organized.
+
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+One important thing I learned from this project is that a good system design does not need to start complex. It is better to begin with a simple structure that clearly separates responsibilities, then improve it step by step as the project grows. I also learned that AI is most useful when I use it reflectively, such as for brainstorming, debugging, and explaining code, rather than copying everything directly. That helped me understand my own design better and make decisions that I could still read, explain, and maintain myself.
